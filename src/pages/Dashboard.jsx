@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import { MessageCircle as Comment } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Navbar from "../components/Navbar";
@@ -13,7 +12,14 @@ import PostCard from "../components/PostCard";
 import CommentPopup from "../components/CommentPopup";
 import StoryViewer from "../components/StoryViewer";
 
-const socket = io("https://socialnetwork-backend-production-7e1a.up.railway.app/"); // Change to your backend URL if different
+// ✅ Centralized API Base URL
+const API_BASE_URL = "https://socialnetwork-backend-production-7e1a.up.railway.app";
+
+// ✅ Update Socket.IO client config
+const socket = io(API_BASE_URL, {
+  transports: ["websocket", "polling"],
+  withCredentials: true,
+});
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -36,22 +42,17 @@ const Dashboard = () => {
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [stories, setStories] = useState([]);
   const [selectedStory, setSelectedStory] = useState(null);
-
-  // New: State for new message notification
   const [hasNewMessage, setHasNewMessage] = useState(false);
 
-  // Use sessionStorage instead of localStorage for token & user
-  const token =
-    sessionStorage.getItem("token") || localStorage.getItem("token");
-
-  // Ref for hidden file input for story upload
+  const token = sessionStorage.getItem("token") || localStorage.getItem("token");
   const storyFileInputRef = useRef(null);
 
-  // Fetch stories function
+  // ================= Fetch Functions =================
+
   const fetchStories = async () => {
     if (!token) return;
     try {
-      const res = await fetch("https://socialnetwork-backend-production-7e1a.up.railway.app/api/stories", {
+      const res = await fetch(`${API_BASE_URL}/api/stories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -61,11 +62,10 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch user info from backend
   const fetchUserInfo = async () => {
     if (!token) return;
     try {
-      const res = await fetch("https://socialnetwork-backend-production-7e1a.up.railway.app/api/user/profile", {
+      const res = await fetch(`${API_BASE_URL}/api/user/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -81,10 +81,9 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch posts for feed
   const fetchPosts = () => {
     if (!token) return navigate("/login");
-    fetch("https://socialnetwork-backend-production-7e1a.up.railway.app/api/posts/feed", {
+    fetch(`${API_BASE_URL}/api/posts/feed`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -94,7 +93,8 @@ const Dashboard = () => {
       });
   };
 
-  // Cover image upload function
+  // ================= Actions =================
+
   const uploadCoverImage = async (file) => {
     if (!token) return toast.error("You must be logged in");
 
@@ -102,11 +102,9 @@ const Dashboard = () => {
     formData.append("coverPic", file);
 
     try {
-      const res = await fetch("https://socialnetwork-backend-production-7e1a.up.railway.app/api/user/cover-pic", {
+      const res = await fetch(`${API_BASE_URL}/api/user/cover-pic`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -119,12 +117,10 @@ const Dashboard = () => {
       toast.success("Cover image updated!");
       fetchUserInfo();
     } catch (err) {
-      console.error(err);
       toast.error("Error uploading cover image");
     }
   };
 
-  // Handle actual story upload file select event
   const handleStoryFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -135,11 +131,9 @@ const Dashboard = () => {
     formData.append("storyMedia", file);
 
     try {
-      const res = await fetch("https://socialnetwork-backend-production-7e1a.up.railway.app/api/stories/create", {
+      const res = await fetch(`${API_BASE_URL}/api/stories/create`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
       const data = await res.json();
@@ -156,10 +150,9 @@ const Dashboard = () => {
     }
   };
 
-  // Like post handler
   const handleLike = async (postId) => {
     try {
-      const res = await fetch(`https://socialnetwork-backend-production-7e1a.up.railway.app/api/posts/${postId}/like`, {
+      const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/like`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -174,7 +167,6 @@ const Dashboard = () => {
     }
   };
 
-  // Submit new post handler
   const handlePostSubmit = async (e) => {
     if (e?.preventDefault) e.preventDefault();
     if (!token) return navigate("/login");
@@ -190,7 +182,7 @@ const Dashboard = () => {
     if (selectedVideo) formData.append("video", selectedVideo);
 
     try {
-      const res = await fetch("https://socialnetwork-backend-production-7e1a.up.railway.app/api/posts/create", {
+      const res = await fetch(`${API_BASE_URL}/api/posts/create`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -213,7 +205,6 @@ const Dashboard = () => {
     }
   };
 
-  // Navigation click handler
   const handleNavClick = (navName) => {
     setActiveNav(navName);
 
@@ -223,19 +214,12 @@ const Dashboard = () => {
       navigate("/friends");
     } else if (navName === "comments") {
       toast("Messages/comments coming soon!");
-      setHasNewMessage(false); // Clear notification when opening messages
+      setHasNewMessage(false);
     }
   };
 
-  // After post created, refresh posts
-  const handlePostCreated = () => {
-    fetchPosts();
-  };
-
-  // After story created, refresh stories
-  const handleStoryCreated = () => {
-    fetchStories();
-  };
+  const handlePostCreated = () => fetchPosts();
+  const handleStoryCreated = () => fetchStories();
 
   // Group stories by userId
   const groupedStories = stories.reduce((acc, story) => {
@@ -251,18 +235,17 @@ const Dashboard = () => {
     return acc;
   }, {});
 
-  // SOCKET.IO: Setup connection and listen for new messages
+  // ================= Socket.IO Setup =================
+
   useEffect(() => {
     if (!token || !userInfo._id) return;
 
-    // Join a room for the current user (optional - based on backend)
-    socket.emit("join", { userId: userInfo._id });
+    // ✅ Join user room
+    socket.emit("joinRoom", { userId: userInfo._id });
 
-    // Listen for new message events
     socket.on("newMessage", (message) => {
-      // Could add more filtering here if needed (e.g., check recipient)
       setHasNewMessage(true);
-      toast.success("New message received!");
+      toast.success(`New message from ${message.sender}`);
     });
 
     return () => {
@@ -270,17 +253,19 @@ const Dashboard = () => {
     };
   }, [token, userInfo._id]);
 
-  // On mount fetch data
+  // ================= Initial Fetch =================
+
   useEffect(() => {
     if (!token) {
       navigate("/login");
       return;
     }
-
     fetchUserInfo();
     fetchPosts();
     fetchStories();
   }, [token]);
+
+  // ================= JSX =================
 
   return (
     <div className="min-h-screen bg-white font-comfortaa">
@@ -290,8 +275,8 @@ const Dashboard = () => {
         setActiveNav={setActiveNav}
         navigate={navigate}
         onNavClick={handleNavClick}
-        hasNewMessage={hasNewMessage}  // Pass notification flag
-        clearMessageNotification={() => setHasNewMessage(false)} // Pass clear func
+        hasNewMessage={hasNewMessage}
+        clearMessageNotification={() => setHasNewMessage(false)}
       />
 
       <div className="flex flex-col lg:flex-row gap-6 py-6 w-full">
@@ -305,14 +290,14 @@ const Dashboard = () => {
         <CreatePost userInfo={userInfo} onPostCreated={handlePostCreated} />
 
         <div className="w-full lg:w-[50%]">
-          {/* Profile pic + plus icon to add a story */}
+          {/* Add story */}
           <div
             onClick={() => storyFileInputRef.current?.click()}
             className="relative w-20 h-20 cursor-pointer"
             title="Add a new story"
           >
             <img
-              src={`https://socialnetwork-backend-production-7e1a.up.railway.app${userInfo.profilePic || "/default-profile.jpg"}`}
+              src={`${API_BASE_URL}${userInfo.profilePic || "/default-profile.jpg"}`}
               alt="Your profile"
               className="w-full h-full rounded-full object-cover border-2 border-blue-500"
             />
@@ -329,6 +314,7 @@ const Dashboard = () => {
             onChange={handleStoryFileChange}
           />
 
+          {/* Stories */}
           <div className="bg-white rounded-md shadow-sm border px-4 py-4 my-4">
             <h2 className="text-lg font-semibold text-gray-800 mb-3 px-1">Stories</h2>
 
@@ -344,7 +330,7 @@ const Dashboard = () => {
                     onClick={() => setSelectedStory(group)}
                   >
                     <img
-                      src={`https://socialnetwork-backend-production-7e1a.up.railway.app${group.user.profilePic || "/default-profile.jpg"}`}
+                      src={`${API_BASE_URL}${group.user.profilePic || "/default-profile.jpg"}`}
                       alt={group.user.name || "User"}
                       className="w-16 h-16 rounded-full border-2 border-blue-500 object-cover"
                     />
