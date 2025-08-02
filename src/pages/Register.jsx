@@ -3,7 +3,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  // Add username in formData state
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+  });
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
@@ -15,17 +21,20 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("https://socialnetwork-backend-production-7e1a.up.railway.app/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        "https://socialnetwork-backend-production-7e1a.up.railway.app/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await res.json();
 
       if (res.ok) {
         setMessage("✅ Registered successfully! You can now log in.");
-        setFormData({ name: "", email: "", password: "" }); // Clear form
+        setFormData({ name: "", username: "", email: "", password: "" }); // Clear form
         setTimeout(() => navigate("/login"), 3000);
       } else {
         setMessage(data.message || "❌ Registration failed");
@@ -56,6 +65,18 @@ const Register = () => {
               value={formData.name}
               onChange={handleChange}
               placeholder="Full Name"
+              required
+              className="w-full bg-white/80 text-black p-2 sm:p-3 rounded-xl outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-400"
+            />
+            {/* New username input */}
+            <motion.input
+              whileFocus={{ scale: 1.03 }}
+              transition={{ duration: 0.2 }}
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Username"
               required
               className="w-full bg-white/80 text-black p-2 sm:p-3 rounded-xl outline-none text-sm sm:text-base focus:ring-2 focus:ring-indigo-400"
             />
