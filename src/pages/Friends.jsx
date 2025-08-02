@@ -27,7 +27,7 @@ const Friends = () => {
   const token = sessionStorage.getItem("token");
   const baseUrl = "https://socialnetwork-backend-production-7e1a.up.railway.app";
 
-  // Fetch logged-in user info with full profilePic URL
+  // Fetch logged-in user info
   const fetchUserInfo = async () => {
     if (!token) return;
     try {
@@ -81,7 +81,7 @@ const Friends = () => {
       })
       .catch(() => setError("Failed to load sent requests"));
 
-    // Fetch received friend requests with full profilePic URLs
+    // Fetch received friend requests
     fetch(`${baseUrl}/api/friends/requests`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -110,6 +110,7 @@ const Friends = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Add friend
   const handleAddFriend = async (userId) => {
     try {
       setLoadingUserId(userId);
@@ -122,7 +123,7 @@ const Friends = () => {
       const data = await res.json();
 
       if (res.ok) {
-        // Refresh sent requests after adding
+        // Refresh sent requests
         const sentRes = await fetch(`${baseUrl}/api/friends/sent`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -141,6 +142,27 @@ const Friends = () => {
       setLoadingUserId(null);
     }
   };
+
+  // Cancel sent request
+  const handleCancelRequest = async (requestId) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/friends/reject/${requestId}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setSentRequests((prev) => prev.filter((r) => r.requestId !== requestId));
+      } else {
+        alert(data.message || "Failed to cancel request");
+      }
+    } catch (err) {
+      alert("Server error while canceling request");
+    }
+  };
+
+  // Accept incoming request
   const handleAcceptRequest = async (requestId) => {
     try {
       const res = await fetch(`${baseUrl}/api/friends/accept/${requestId}`, {
@@ -150,10 +172,10 @@ const Friends = () => {
 
       const data = await res.json();
       if (res.ok) {
-        // Remove request from the UI
+        // Remove from UI
         setReceivedRequests((prev) => prev.filter((r) => r.requestId !== requestId));
 
-        // Refresh friends list
+        // Refresh friends
         const friendsRes = await fetch(`${baseUrl}/api/friends/list`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -167,6 +189,7 @@ const Friends = () => {
     }
   };
 
+  // Reject incoming request
   const handleRejectRequest = async (requestId) => {
     try {
       const res = await fetch(`${baseUrl}/api/friends/reject/${requestId}`, {
@@ -185,6 +208,7 @@ const Friends = () => {
     }
   };
 
+  // Remove friend
   const handleRemoveFriend = async (friendId) => {
     if (!window.confirm("Are you sure you want to remove this friend?")) return;
 
@@ -214,7 +238,6 @@ const Friends = () => {
     (user) => user._id !== currentUserId && !isFriend(user._id)
   );
 
-  // Navigate to chat page for the friend
   const goToChat = (userId) => {
     navigate(`/chat/${userId}`);
   };
@@ -231,10 +254,11 @@ const Friends = () => {
       {/* Tabs */}
       <div className="flex justify-center gap-3 sm:gap-6 mb-6 flex-nowrap">
         <button
-          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold text-xs sm:text-base ${activeTab === "requests"
-            ? "bg-blue-600 text-white"
-            : "bg-gray-200 text-gray-700"
-            }`}
+          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold text-xs sm:text-base ${
+            activeTab === "requests"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}
           onClick={() => setActiveTab("requests")}
         >
           <FaUserPlus size={16} className="sm:w-5 sm:h-5" />
@@ -247,10 +271,11 @@ const Friends = () => {
         </button>
 
         <button
-          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold text-xs sm:text-base ${activeTab === "friends"
-            ? "bg-blue-600 text-white"
-            : "bg-gray-200 text-gray-700"
-            }`}
+          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold text-xs sm:text-base ${
+            activeTab === "friends"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}
           onClick={() => setActiveTab("friends")}
         >
           <FaUserFriends size={16} className="sm:w-5 sm:h-5" />
@@ -261,7 +286,7 @@ const Friends = () => {
         </button>
       </div>
 
-      {/* Content with motion */}
+      {/* Content */}
       <AnimatePresence mode="wait">
         {activeTab === "requests" && (
           <motion.div
@@ -304,8 +329,6 @@ const Friends = () => {
                     >
                       Reject
                     </button>
-
-
                   </div>
                 </div>
               ))
@@ -331,7 +354,7 @@ const Friends = () => {
                     key={friend._id}
                     className="flex justify-between items-center p-3 rounded relative border border-gray-300"
                   >
-                    {/* Left: Profile picture + username */}
+                    {/* Left */}
                     <Link
                       to={`/friend/${friend._id}`}
                       className="flex items-center gap-3 cursor-pointer"
@@ -339,7 +362,7 @@ const Friends = () => {
                       <img
                         src={
                           friend.profilePic
-                            ? `https://socialnetwork-backend-production-7e1a.up.railway.app${friend.profilePic}`
+                            ? `${baseUrl}${friend.profilePic}`
                             : "/default-profile.jpg"
                         }
                         alt={friend.name}
@@ -348,7 +371,7 @@ const Friends = () => {
                       <span className="font-semibold">{friend.name}</span>
                     </Link>
 
-                    {/* Right: message + menu */}
+                    {/* Right */}
                     <div className="flex items-center gap-4 relative">
                       <MessageCircle
                         className="cursor-pointer text-gray-600 hover:text-blue-500 transition-colors duration-200"
