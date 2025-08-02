@@ -20,16 +20,31 @@ const FriendRequests = () => {
   }, []);
 
   const handleAccept = async (requestId) => {
-    const token = sessionStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
+  setLoadingIds((ids) => [...ids, requestId]);
+  try {
     const res = await fetch(`https://socialnetwork-backend-production-7e1a.up.railway.app/api/friends/accept/${requestId}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
 
+    console.log("Accept response status:", res.status);
+
     if (res.ok) {
       setRequests((prev) => prev.filter((r) => r._id !== requestId));
+    } else {
+      const data = await res.json();
+      console.log("Accept error data:", data);
+      alert(data.message || "Failed to accept request");
     }
-  };
+  } catch (error) {
+    console.error("Accept fetch error:", error);
+    alert("Network error while accepting request");
+  } finally {
+    setLoadingIds((ids) => ids.filter((id) => id !== requestId));
+  }
+};
+
 
   const handleReject = async (requestId) => {
     const token = sessionStorage.getItem("token");
