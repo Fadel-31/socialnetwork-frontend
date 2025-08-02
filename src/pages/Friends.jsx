@@ -141,8 +141,33 @@ const Friends = () => {
       setLoadingUserId(null);
     }
   };
+  const handleAcceptRequest = async (requestId) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/friends/accept/${requestId}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  const handleCancelRequest = async (requestId) => {
+      const data = await res.json();
+      if (res.ok) {
+        // Remove request from the UI
+        setReceivedRequests((prev) => prev.filter((r) => r.requestId !== requestId));
+
+        // Refresh friends list
+        const friendsRes = await fetch(`${baseUrl}/api/friends/list`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const friendsData = await friendsRes.json();
+        setFriends(friendsData);
+      } else {
+        alert(data.message || "Failed to accept request");
+      }
+    } catch (err) {
+      alert("Server error while accepting request");
+    }
+  };
+
+  const handleRejectRequest = async (requestId) => {
     try {
       const res = await fetch(`${baseUrl}/api/friends/reject/${requestId}`, {
         method: "POST",
@@ -150,14 +175,13 @@ const Friends = () => {
       });
 
       const data = await res.json();
-
       if (res.ok) {
-        setSentRequests((prev) => prev.filter((r) => r.requestId !== requestId));
+        setReceivedRequests((prev) => prev.filter((r) => r.requestId !== requestId));
       } else {
-        alert(data.message || "Failed to cancel request");
+        alert(data.message || "Failed to reject request");
       }
-    } catch {
-      alert("Server error");
+    } catch (err) {
+      alert("Server error while rejecting request");
     }
   };
 
@@ -201,17 +225,16 @@ const Friends = () => {
         to="/dashboard"
         className="inline-block mb-4 text-blue-400 hover:text-blue-600 transition duration-150"
       >
-        ← 
+        ←
       </Link>
 
       {/* Tabs */}
       <div className="flex justify-center gap-3 sm:gap-6 mb-6 flex-nowrap">
         <button
-          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold text-xs sm:text-base ${
-            activeTab === "requests"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700"
-          }`}
+          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold text-xs sm:text-base ${activeTab === "requests"
+            ? "bg-blue-600 text-white"
+            : "bg-gray-200 text-gray-700"
+            }`}
           onClick={() => setActiveTab("requests")}
         >
           <FaUserPlus size={16} className="sm:w-5 sm:h-5" />
@@ -224,11 +247,10 @@ const Friends = () => {
         </button>
 
         <button
-          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold text-xs sm:text-base ${
-            activeTab === "friends"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700"
-          }`}
+          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold text-xs sm:text-base ${activeTab === "friends"
+            ? "bg-blue-600 text-white"
+            : "bg-gray-200 text-gray-700"
+            }`}
           onClick={() => setActiveTab("friends")}
         >
           <FaUserFriends size={16} className="sm:w-5 sm:h-5" />
@@ -271,17 +293,19 @@ const Friends = () => {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => alert("Accept request functionality here")}
+                      onClick={() => handleAcceptRequest(req.requestId)}
                       className="btn btn-primary"
                     >
                       Accept
                     </button>
                     <button
-                      onClick={() => alert("Reject request functionality here")}
+                      onClick={() => handleRejectRequest(req.requestId)}
                       className="btn btn-warning"
                     >
                       Reject
                     </button>
+
+
                   </div>
                 </div>
               ))
