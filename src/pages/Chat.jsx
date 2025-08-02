@@ -45,7 +45,7 @@ const Chat = () => {
   const [notifications, setNotifications] = useState([]);
 
   // Responsive states
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 350);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 450);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const token = sessionStorage.getItem("token");
@@ -61,8 +61,8 @@ const Chat = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsSmallScreen(window.innerWidth < 350);
-      if (window.innerWidth >= 350) setIsChatOpen(false);
+      setIsSmallScreen(window.innerWidth < 450);
+      if (window.innerWidth >= 450) setIsChatOpen(false);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
