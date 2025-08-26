@@ -1,10 +1,11 @@
 // socket.js
 import { io } from "socket.io-client";
 
-// ✅ Connect to backend (force WebSocket)
-const socket = io("https://socialnetwork-backend-production-7e1a.up.railway.app", {
-  transports: ["websocket"], 
-  withCredentials: true
+const SOCKET_URL = "https://socialnetwork-backend-production-7e1a.up.railway.app";
+
+const socket = io(SOCKET_URL, {
+  transports: ["websocket"], // force WebSocket, avoid polling issues
+  withCredentials: true,     // needed for CORS
 });
 
 export default socket;

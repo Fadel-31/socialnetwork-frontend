@@ -6,7 +6,7 @@ import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 
-const socket = io("https://socialnetwork-backend-production-7e1a.up.railway.app/");
+import socket from ".././socket";
 const baseURL = "https://socialnetwork-backend-production-7e1a.up.railway.app";
 
 const getProfilePicUrl = (pic) => {

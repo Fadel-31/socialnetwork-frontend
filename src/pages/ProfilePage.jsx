@@ -82,9 +82,10 @@ const ProfilePage = () => {
 
   // Profile pic upload
   const handleChangeProfilePhotoClick = () => {
-    setShowImageOptions(false);
-    fileInputProfileRef.current?.click();
-  };
+  fileInputProfileRef.current?.click(); // trigger the file picker first
+  setShowImageOptions(false);           // then close the modal
+};
+
 
   const handleProfileFileChange = async (e) => {
     if (!e.target.files.length) return;
@@ -93,7 +94,7 @@ const ProfilePage = () => {
     formData.append("profilePic", e.target.files[0]);
 
     try {
-      const res = await fetch(`https://socialnetwork-backend-production-7e1a.up.railway.app/api/user/upload-profile-pic`, {
+      const res = await fetch(`https://socialnetwork-backend-production-7e1a.up.railway.app/api/user/profile-pic`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,

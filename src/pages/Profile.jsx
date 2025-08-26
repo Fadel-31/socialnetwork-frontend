@@ -142,22 +142,30 @@ const Profile = () => {
             <BackArrowIcon />
           </button>
 
-          <Link
-            to={`/profilePage/${user._id}`}
-            className="flex items-center gap-3 hover:text-gray-700 transition"
-          >
-            <img
-              src={
-                user.profilePic
-                  ? `https://socialnetwork-backend-production-7e1a.up.railway.app${user.profilePic}`
-                  : "/default-profile-pic.png"
-              }
-              alt="Profile"
-              className="w-14 h-14 rounded-full object-cover border border-gray-400"
-            />
-            <h2 className="text-lg font-bold text-sm-on-xs">{user.name}</h2>
+         <div className="flex items-center gap-3">
+  <ProfilePicUpload
+    onUpload={(newPic) => {
+      setUser((prev) => ({ ...prev, profilePic: newPic }));
+    }}
+  >
+    <Link
+      to={`/profilePage/${user._id}`}
+      className="flex items-center gap-3 hover:text-gray-700 transition"
+    >
+      <img
+        src={
+          user.profilePic
+            ? `https://socialnetwork-backend-production-7e1a.up.railway.app${user.profilePic}`
+            : "/default-profile-pic.png"
+        }
+        alt="Profile"
+        className="w-14 h-14 rounded-full object-cover border border-gray-400"
+      />
+      <h2 className="text-lg font-bold text-sm-on-xs">{user.name}</h2>
+    </Link>
+  </ProfilePicUpload>
+</div>
 
-          </Link>
         </div>
 
         <button
