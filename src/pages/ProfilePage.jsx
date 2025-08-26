@@ -87,26 +87,38 @@ const ProfilePage = () => {
 };
 
 
-  const handleProfileFileChange = async (e) => {
-    if (!e.target.files.length) return;
+ const handleProfileFileChange = async (e) => {
+  if (!e.target.files.length) return;
+  
+  const file = e.target.files[0];
+  console.log("🖼 Selected file:", file);
 
-    const formData = new FormData();
-    formData.append("profilePic", e.target.files[0]);
+  const formData = new FormData();
+  formData.append("profilePic", file);
 
-    try {
-      const res = await fetch(`https://socialnetwork-backend-production-7e1a.up.railway.app/api/user/profile-pic`, {
+  try {
+    const res = await fetch(
+      "https://socialnetwork-backend-production-7e1a.up.railway.app/api/user/profile-pic",
+      {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
-      });
+      }
+    );
 
-      if (!res.ok) throw new Error("Upload failed");
-      const data = await res.json();
-      setUser((prev) => ({ ...prev, profilePic: data.profilePic }));
-    } catch (err) {
-      alert(err.message);
-    }
-  };
+    console.log("🔹 Response status:", res.status);
+    const data = await res.json();
+    console.log("🔹 Response data:", data);
+
+    if (!res.ok) throw new Error(data.message || "Upload failed");
+
+    setUser((prev) => ({ ...prev, profilePic: data.profilePic }));
+  } catch (err) {
+    console.error("❌ Upload error:", err);
+    alert(err.message);
+  }
+};
+
 
   // Cover pic upload
   const handleChangeCoverPhotoClick = () => {
