@@ -128,7 +128,7 @@ const Dashboard = () => {
     if (!token) return toast.error("You must be logged in");
 
     const formData = new FormData();
-    formData.append("storyMedia", file);
+formData.append("media", file);
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/stories/create`, {

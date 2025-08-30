@@ -341,6 +341,7 @@ const Chat = () => {
                 src={getProfilePicUrl(friend.profilePic)}
                 alt={friend.name}
                 className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                
               />
               <div className="flex flex-col flex-grow">
                 <span className="font-medium flex items-center gap-2 relative">

@@ -130,15 +130,14 @@ const FriendProfile = () => {
 
         {/* Profile picture overlapping the cover */}
         <img
-          src={profilePicUrl}
-          alt="Profile"
-          className="absolute left-1/2 transform -translate-x-1/2 -bottom-10 w-24 h-24 rounded-full border-4 border-white object-cover"
-          onError={(e) => {
-            if (e.target.src !== "/default-profile.jpg") {
-              e.target.src = "/default-profile.jpg";
-            }
-          }}
-        />
+  src={profilePicUrl}
+  alt="Profile"
+  className="absolute left-1/2 transform -translate-x-1/2 -bottom-10 w-24 h-24 rounded-full border-4 border-white object-cover"
+  onError={(e) => {
+    e.target.src = "/default-profile.jpg";
+  }}
+/>
+
       </div>
 
       {/* Bio and friend status */}
